@@ -2,10 +2,14 @@ import java.awt.*;
 import javax.swing.*;
 
 public class MenuPanel extends JPanel {
+    // load assets
+    _loadAssets assets = new _loadAssets();
+
+
     private Image backgroundimage;
 
     public MenuPanel(CardLayout card, JPanel mainPanel) {
-        backgroundimage = new ImageIcon("assets/background-day.png").getImage();
+        backgroundimage = new ImageIcon(assets.getIcon(assets.BACKGROUND_DAY)).getImage();
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);

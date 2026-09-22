@@ -1,9 +1,14 @@
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.*;
 
 public class GamePanel extends JPanel implements ActionListener {
+    // load assets
+    _loadAssets assets = new _loadAssets();
+
+    private Bird bird;
+
     // background
     private Image backgroundimage;
     private int backgroundX = 0;
@@ -17,8 +22,11 @@ public class GamePanel extends JPanel implements ActionListener {
     private Timer timer;
 
     GamePanel() {
-        backgroundimage = new ImageIcon("assets/background-day.png").getImage();
-        basePlatform = new ImageIcon("assets/base.png").getImage();
+        backgroundimage = new ImageIcon(assets.getIcon(assets.BACKGROUND_DAY)).getImage();
+        basePlatform = new ImageIcon(assets.getIcon(assets.BASE)).getImage();
+
+        bird = new Bird(80, 250, 34, 24);
+        setupKeyBindings();
 
         timer = new Timer(16, this);
         timer.start();
@@ -26,6 +34,12 @@ public class GamePanel extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        if (!isShowing()) {
+            return;
+        }
+
+        bird.update();
+
         backgroundX -= backgroundspeed;
         if (backgroundX <= -getWidth()) {
             backgroundX = 0;
@@ -53,5 +67,27 @@ public class GamePanel extends JPanel implements ActionListener {
 
         g.drawImage(basePlatform, groundX, groundY, getWidth(), groundHeight, this);
         g.drawImage(basePlatform, groundX + getWidth(), groundY, getWidth(), groundHeight, this);
+
+        g.setColor(Color.RED);
+        g.fillRect(bird.getX(), bird.getY(), bird.getWidth(), bird.getHeight());
+
+    }
+
+    private void setupKeyBindings(){
+        InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actionMap = getActionMap();
+
+        inputMap.put(KeyStroke.getKeyStroke("SPACE"), "flap");
+
+        actionMap.put(
+            "flap",
+            new AbstractAction(){
+
+                @Override 
+                public void actionPerformed(ActionEvent e){
+                    bird.flap();
+                }
+            }
+        );
     }
 }
