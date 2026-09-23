@@ -40,6 +40,10 @@ public class Bird {
         return y;
     }
 
+    public void setY(int val){
+        this.y = val;
+    }
+
     public int getWidth() {
         return width;
     }

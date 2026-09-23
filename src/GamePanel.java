@@ -26,11 +26,12 @@ public class GamePanel extends JPanel implements ActionListener {
     private Image basePlatform;
     private int groundX = 0;
     private int groundspeed = 4;
+    private static final int GROUND_HEIGHT = 100;
 
     private Timer timer;
 
     GamePanel() {
-        backgroundimage = new ImageIcon(assets.getIcon(assets.BACKGROUND_DAY)).getImage();
+        backgroundimage = new ImageIcon(assets.getIcon(assets.BACKGROUND_NIGHT)).getImage();
         basePlatform = new ImageIcon(assets.getIcon(assets.BASE)).getImage();
 
         bird = new Bird(80, 250, 34, 24);
@@ -52,6 +53,7 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         bird.update();
+        checkBirdBoundaries();
         updateBirdImage();
 
         birdAngle = Math.max(Math.toRadians(-25),
@@ -123,5 +125,18 @@ public class GamePanel extends JPanel implements ActionListener {
                         birdAngle = Math.toRadians(-25);
                     }
                 });
+    }
+
+    private void checkBirdBoundaries(){
+
+        if(bird.getY() < 0){
+            bird.setY(0);
+        }
+
+        int groundY = getHeight() - GROUND_HEIGHT;
+
+        if(bird.getY() + bird.getHeight() >= groundY){
+            bird.setY(groundY - bird.getHeight());
+        }
     }
 }
