@@ -25,31 +25,34 @@ public class Bird {
     public void update() {
         velocityY += gravity;
         y += velocityY;
-         
+
     }
 
-    public void flap(){
+    public void flap() {
         velocityY = flapStrength;
     }
 
-    public int getX(){
+    public int getX() {
         return x;
     }
 
-    public int getY(){
+    public int getY() {
         return y;
     }
 
-    public int getWidth(){
+    public int getWidth() {
         return width;
     }
 
-
-    public int getHeight(){
+    public int getHeight() {
         return height;
     }
 
-    public Rectangle getBounds(){
+    public double getVelocityY() {
+        return velocityY;
+    }
+
+    public Rectangle getBounds() {
         return new Rectangle(x, y, width, height);
     }
 }

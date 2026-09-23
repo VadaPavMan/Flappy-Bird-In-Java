@@ -80,8 +80,4 @@ public class _loadAssets {
     public static final String PIPE_RED = asset("sprites", "pipe-red.png");
 
 
-
-
-
-
 }
