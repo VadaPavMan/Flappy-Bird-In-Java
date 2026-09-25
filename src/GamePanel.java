@@ -6,6 +6,9 @@ import java.util.Random;
 import javax.swing.*;
 
 public class GamePanel extends JPanel implements ActionListener {
+    // Game State
+    private GameState gameState;
+
     // load assets
     _loadAssets assets = new _loadAssets();
 
@@ -23,6 +26,8 @@ public class GamePanel extends JPanel implements ActionListener {
     private Image backgroundimage;
     private int backgroundX = 0;
     private int backgroundspeed = 1;
+    // game over
+    private Image gameOverImage;
 
     // base
     private Image basePlatform;
@@ -45,8 +50,12 @@ public class GamePanel extends JPanel implements ActionListener {
     private final Random random = new Random();
 
     GamePanel() {
+        gameState = GameState.PLAYING;
+
         backgroundimage = new ImageIcon(assets.getIcon(assets.BACKGROUND_NIGHT)).getImage();
         basePlatform = new ImageIcon(assets.getIcon(assets.BASE)).getImage();
+
+        gameOverImage = new ImageIcon(assets.getIcon(_loadAssets.GAMEOVER)).getImage();
 
         bird = new Bird(80, 250, 34, 24);
         setupKeyBindings();
@@ -71,6 +80,10 @@ public class GamePanel extends JPanel implements ActionListener {
             return;
         }
 
+        if (gameState != GameState.PLAYING) {
+            return;
+        }
+
         bird.update();
         checkBirdBoundaries();
         updateBirdImage();
@@ -79,8 +92,8 @@ public class GamePanel extends JPanel implements ActionListener {
             pipe.update();
         }
 
-        if(hasCollided()){
-            System.out.println("Collision!");
+        if (hasCollided()) {
+            handleGameOver();
         }
 
         updatePipes();
@@ -147,13 +160,29 @@ public class GamePanel extends JPanel implements ActionListener {
                         pipe.getWidth(), pipe.getHeight(), this);
             }
         }
+
+        if (gameState == GameState.GAME_OVER) {
+            int gameOverWidth = gameOverImage.getWidth(this);
+            int gameOverHeight = gameOverImage.getHeight(this);
+
+            int gameOverX = (getWidth() - gameOverWidth) / 2;
+            int gameOverY = (getHeight() - gameOverHeight) / 2;
+
+            g.drawImage(gameOverImage, gameOverX, gameOverY, this);
+        }
     }
 
+    
+    // Key Bindings: 
+    // SPACE: to operate the bird
+    // ENTER: to restart the game
+    // ESC: to get back to main menu
     private void setupKeyBindings() {
         InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap actionMap = getActionMap();
 
         inputMap.put(KeyStroke.getKeyStroke("SPACE"), "flap");
+        inputMap.put(KeyStroke.getKeyStroke("ENTER"), "restart");
 
         actionMap.put(
                 "flap",
@@ -161,10 +190,32 @@ public class GamePanel extends JPanel implements ActionListener {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
+                        if (gameState != GameState.PLAYING)
+                            return;
                         bird.flap();
                         birdAngle = Math.toRadians(-25);
                     }
                 });
+
+        actionMap.put("restart",
+                new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (gameState == GameState.GAME_OVER) {
+                            restartGame();
+                        }
+                    }
+                });
+    }
+
+    private void restartGame() {
+        bird = new Bird(80, 250, 34, 24);
+        birdAngle = 0;
+        pipes.clear();
+        backgroundX = 0;
+        groundX = 0;
+        gameState = GameState.PLAYING;
+        repaint();
     }
 
     private void checkBirdBoundaries() {
@@ -173,7 +224,7 @@ public class GamePanel extends JPanel implements ActionListener {
             bird.setY(0);
         }
 
-        int groundY = getHeight() - GROUND_HEIGHT;
+        groundY = getHeight() - GROUND_HEIGHT;
 
         if (bird.getY() + bird.getHeight() >= groundY) {
             bird.setY(groundY - bird.getHeight());
@@ -183,7 +234,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private void addPipePair(int x) {
         int gapY = PIPE_MIN_GAP_Y
                 + random.nextInt(PIPE_MAX_GAP_Y - PIPE_MIN_GAP_Y + 1);
-        int groundY = getHeight() > 0 ? getHeight() - GROUND_HEIGHT : 540;
+        groundY = getHeight() > 0 ? getHeight() - GROUND_HEIGHT : 540;
 
         pipes.add(new Pipe(x, 0, PIPE_WIDTH, gapY, PIPE_SPEED, true));
         pipes.add(new Pipe(x, gapY + PIPE_GAP, PIPE_WIDTH,
@@ -209,11 +260,15 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
 
-    private boolean hasHitPipe(){
+    private void handleGameOver() {
+        gameState = GameState.GAME_OVER;
+    }
+
+    private boolean hasHitPipe() {
         Rectangle birdBounds = bird.getBounds();
 
-        for(Pipe pipe : pipes){
-            if (birdBounds.intersects(pipe.getBounds())){
+        for (Pipe pipe : pipes) {
+            if (birdBounds.intersects(pipe.getBounds())) {
                 return true;
             }
         }
@@ -221,13 +276,11 @@ public class GamePanel extends JPanel implements ActionListener {
         return false;
     }
 
-    private boolean hasHitGround(){
-        if(bird.getY() >= groundY - bird.getHeight()) return true;
-        return false;
+    private boolean hasHitGround() {
+        return bird.getY() >= groundY - bird.getHeight();
     }
 
-    private boolean hasCollided(){
-        if (hasHitGround() || hasHitPipe()) return true;
-        return false;
+    private boolean hasCollided() {
+        return hasHitGround() || hasHitPipe();
     }
 }
